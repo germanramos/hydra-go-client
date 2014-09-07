@@ -4,6 +4,7 @@ import ()
 
 type HydraClient interface {
 	Get()
+	ReloadAppServers()
 	ReloadHydraServers()
 }
 

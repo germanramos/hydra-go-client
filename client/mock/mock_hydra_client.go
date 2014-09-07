@@ -36,6 +36,14 @@ func (_mr *_MockHydraClientRecorder) Get() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Get")
 }
 
+func (_m *MockHydraClient) ReloadAppServers() {
+	_m.ctrl.Call(_m, "ReloadAppServers")
+}
+
+func (_mr *_MockHydraClientRecorder) ReloadAppServers() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ReloadAppServers")
+}
+
 func (_m *MockHydraClient) ReloadHydraServers() {
 	_m.ctrl.Call(_m, "ReloadHydraServers")
 }
