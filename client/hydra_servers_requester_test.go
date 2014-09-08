@@ -24,10 +24,7 @@ var _ = Describe("HydraServersRequester", func() {
 		Context("when response status code is different from 200 OK", func() {
 			It("should throw an error", func() {
 				ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					// http.Error(rw, err.Error(), http.StatusInternalServerError)
 					w.WriteHeader(http.StatusInternalServerError)
-					// rw.Header().Set("Content-Type", "application/json")
-					// rw.Write(jsonOutput)
 				}))
 				defer ts.Close()
 
