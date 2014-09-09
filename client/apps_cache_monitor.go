@@ -11,12 +11,20 @@ type AppsCacheMonitor struct {
 	timeInterval time.Duration
 }
 
-func NewAppsCacheMonitor(hydraClient HydraClient, refreshInterval uint) *AppsCacheMonitor {
+func NewAppsCacheMonitor(hydraClient HydraClient, refreshInterval time.Duration) *AppsCacheMonitor {
 	return &AppsCacheMonitor{
 		hydraClient:  hydraClient,
 		running:      false,
-		timeInterval: time.Duration(refreshInterval) * time.Millisecond,
+		timeInterval: refreshInterval,
 	}
+}
+
+func (a *AppsCacheMonitor) GetInterval() time.Duration {
+	return a.timeInterval
+}
+
+func (a *AppsCacheMonitor) IsRunning() bool {
+	return a.running
 }
 
 func (a *AppsCacheMonitor) Run() {
@@ -39,8 +47,4 @@ func (a *AppsCacheMonitor) Run() {
 
 func (a *AppsCacheMonitor) Stop() {
 	a.controller <- "stop"
-}
-
-func (a *AppsCacheMonitor) IsRunning() bool {
-	return a.running
 }

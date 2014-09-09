@@ -7,17 +7,23 @@ import (
 	"code.google.com/p/gomock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"time"
 )
 
 var _ = Describe("AppsCacheMonitor", func() {
 	var (
-		mockCtrl        *gomock.Controller
-		mockHydraClient *mock.MockHydraClient
+		mockCtrl         *gomock.Controller
+		mockHydraClient  *mock.MockHydraClient
+		appsCacheMonitor *AppsCacheMonitor
 	)
+
+	var refreshInterval time.Duration = time.Duration(3000) * time.Millisecond
 
 	BeforeEach(func() {
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockHydraClient = mock.NewMockHydraClient(mockCtrl)
+		appsCacheMonitor = NewAppsCacheMonitor(mockHydraClient, refreshInterval)
 	})
 
 	AfterEach(func() {
@@ -26,33 +32,38 @@ var _ = Describe("AppsCacheMonitor", func() {
 
 	Context("when new AppsCacheMonitor is instantiated", func() {
 		It("should not be running", func() {
-			appCacheMonitor := NewAppsCacheMonitor(mockHydraClient, 30000)
-			Expect(appCacheMonitor.IsRunning()).To(BeFalse())
+			Expect(appsCacheMonitor.IsRunning()).To(BeFalse())
+		})
+	})
+
+	// TODO: Refactor to abstract class
+	Describe("Get", func() {
+		It("should return the refresh interval", func() {
+			Expect(appsCacheMonitor.GetInterval()).To(Equal(refreshInterval))
 		})
 	})
 
 	Describe("Run", func() {
 		It("should run successfully", func() {
 			mockHydraClient.EXPECT().ReloadAppServers()
-			appCacheMonitor := NewAppsCacheMonitor(mockHydraClient, 30000)
-			appCacheMonitor.Run()
+			appsCacheMonitor.Run()
 			Eventually(func() bool {
-				return appCacheMonitor.IsRunning()
+				return appsCacheMonitor.IsRunning()
 			}).Should(BeTrue())
+			appsCacheMonitor.Stop()
 		})
 	})
 
 	Describe("Stop", func() {
 		It("should stop the monitor", func() {
 			mockHydraClient.EXPECT().ReloadAppServers()
-			appCacheMonitor := NewAppsCacheMonitor(mockHydraClient, 30000)
-			appCacheMonitor.Run()
+			appsCacheMonitor.Run()
 			Eventually(func() bool {
-				return appCacheMonitor.IsRunning()
+				return appsCacheMonitor.IsRunning()
 			}).Should(BeTrue())
-			appCacheMonitor.Stop()
+			appsCacheMonitor.Stop()
 			Eventually(func() bool {
-				return appCacheMonitor.IsRunning()
+				return appsCacheMonitor.IsRunning()
 			}).Should(BeFalse())
 		})
 	})
