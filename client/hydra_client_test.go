@@ -98,16 +98,14 @@ var _ = Describe("HydraClient", func() {
 				hydraClient.ReloadAppServers()
 			})
 		})
-		// Context("when some applications are registered", func() {
-		// 	It("should require update the application cache", func() {
-		// 		mockRequester.EXPECT().GetCandidateServers(gomock.Any(), gomock.Eq("app1")).Return([]string{"http://localhost:8080"}, nil)
-		// 		_, _ = hydraClient.Get("app1", false)
-		// 		// Expect(se, ...)
+		Context("when some applications are registered", func() {
+			It("should require update the application cache", func() {
+				mockRequester.EXPECT().GetCandidateServers(gomock.Any(), gomock.Eq("app1")).Return([]string{"http://localhost:8080"}, nil)
+				_, _ = hydraClient.Get("app1", false)
 
-		// 		// mockRequester.EXPECT().GetCandidateServers(gomock.Any(), gomock.Any())
-		// 		mockRequester.EXPECT().GetCandidateServers(gomock.Any(), gomock.Eq("app1"))
-		// 		hydraClient.ReloadAppServers()
-		// 	})
-		// })
+				mockRequester.EXPECT().GetCandidateServers(gomock.Any(), gomock.Eq("app1"))
+				hydraClient.ReloadAppServers()
+			})
+		})
 	})
 })
