@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"io/ioutil"
-	// "errors"
 	"net/http"
 )
 
