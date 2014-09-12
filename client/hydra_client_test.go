@@ -4,9 +4,9 @@ import (
 	. "github.com/innotech/hydra-go-client/client"
 	mock "github.com/innotech/hydra-go-client/client/mock"
 
-	"code.google.com/p/gomock/gomock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 
 	"errors"
 )

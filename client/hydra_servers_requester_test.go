@@ -3,8 +3,8 @@ package client_test
 import (
 	. "github.com/innotech/hydra-go-client/client"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 
 	"encoding/json"
 	"net/http"
