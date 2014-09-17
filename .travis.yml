@@ -1,0 +1,9 @@
+language: go
+go:
+  - 1.3.0
+  - tip
+
+install:
+  - export PATH=$PATH:$HOME/gopath/bin
+
+script: ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race
