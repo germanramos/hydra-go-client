@@ -36,7 +36,6 @@ var _ = Describe("AppsCacheMonitor", func() {
 		})
 	})
 
-	// TODO: Refactor to abstract class
 	Describe("Get", func() {
 		It("should return the refresh interval", func() {
 			Expect(appsCacheMonitor.GetInterval()).To(Equal(refreshInterval))

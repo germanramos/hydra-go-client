@@ -16,6 +16,7 @@ func NewHydraCacheMonitor(hydraClient HydraClient, refreshInterval time.Duration
 	return h
 }
 
+// Run executes a coroutine that reload periodically the hydra cache of the Hydra Client
 func (h *HydraCacheMonitor) Run() {
 	h.controller = make(chan string, 1)
 	h.running = true

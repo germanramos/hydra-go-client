@@ -36,7 +36,6 @@ var _ = Describe("HydraCacheMonitor", func() {
 		})
 	})
 
-	// TODO: Refactor to abstract class
 	Describe("Get", func() {
 		It("should return the refresh interval", func() {
 			Expect(hydraCacheMonitor.GetInterval()).To(Equal(refreshInterval))
