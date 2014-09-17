@@ -26,6 +26,13 @@ var _ = Describe("HydraClientFactory", func() {
 		mockCtrl.Finish()
 	})
 
+	It("should be instantiated with default configuration", func() {
+		Expect(HydraClientFactory.GetAppsCacheDuration()).To(Equal(DefaultAppsCacheDuration))
+		Expect(HydraClientFactory.GetDurationBetweenAllServersRetry()).To(Equal(DefaultDurationBetweenAllServersRetry))
+		Expect(HydraClientFactory.GetHydraServersCacheDuration()).To(Equal(DefaultHydraServersCacheDuration))
+		Expect(HydraClientFactory.GetMaxNumberOfRetriesPerHydraServer()).To(Equal(DefaultNumberOfRetries))
+	})
+
 	Describe("Build", func() {
 		It("should build a HydraClient", func() {
 			var client *Client
@@ -50,7 +57,6 @@ var _ = Describe("HydraClientFactory", func() {
 			It("should set hydra server list successfully", func() {
 				err := HydraClientFactory.Config([]string{"http://localhost:8080"})
 				Expect(err).ShouldNot(HaveOccurred())
-				// TODO: check
 			})
 		})
 	})
