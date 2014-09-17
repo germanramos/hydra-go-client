@@ -5,26 +5,15 @@ import (
 )
 
 type HydraCacheMonitor struct {
-	controller   chan string
-	hydraClient  HydraClient
-	running      bool
-	timeInterval time.Duration
+	AbstractCacheMonitor
 }
 
 func NewHydraCacheMonitor(hydraClient HydraClient, refreshInterval time.Duration) *HydraCacheMonitor {
-	return &HydraCacheMonitor{
-		hydraClient:  hydraClient,
-		running:      false,
-		timeInterval: refreshInterval,
-	}
-}
-
-func (h *HydraCacheMonitor) GetInterval() time.Duration {
-	return h.timeInterval
-}
-
-func (h *HydraCacheMonitor) IsRunning() bool {
-	return h.running
+	h := new(HydraCacheMonitor)
+	h.hydraClient = hydraClient
+	h.running = false
+	h.timeInterval = refreshInterval
+	return h
 }
 
 func (h *HydraCacheMonitor) Run() {
@@ -43,8 +32,4 @@ func (h *HydraCacheMonitor) Run() {
 		}
 		h.running = false
 	}()
-}
-
-func (h *HydraCacheMonitor) Stop() {
-	h.controller <- "stop"
 }
