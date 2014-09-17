@@ -17,6 +17,8 @@ func NewHydraServersRequester() *HydraServersRequester {
 	return new(HydraServersRequester)
 }
 
+// GetCandidateServers requests to public api of one hydra server the urls
+// for the available servers for one application
 func (h *HydraServersRequester) GetCandidateServers(hydraServerUrl string, appId string) ([]string, error) {
 	res, errResponse := http.Get(hydraServerUrl + appId)
 	if errResponse != nil {
