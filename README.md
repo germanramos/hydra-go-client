@@ -45,6 +45,6 @@ Name | Default value | Description
 appsCacheDuration | 60 seconds | The time period that the cache that store the candidate servers for applications is invalidated.
 hydraServersCacheDuration| 20 seconds | The time period that the cache that store the hydra servers is invalidated.
 maxNumberOfRetries| 10 | The client try this number of times to connect to all the register hydra servers.
-durationBetweenAllServersRetry| 300 milliseconds | The time between all hydra servers are tried and the next retry.
+durationBetweenAllServersRetry| 0 milliseconds | The time between all hydra servers are tried and the next retry.
 
 
