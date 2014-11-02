@@ -46,7 +46,7 @@ var _ = FDescribe("HydraServiceCache", func() {
 				hydraServers := hydraServiceCache.GetHydraServers()
 
 				Expect(hydraServers).ToNot(BeEmpty(), "Must return a not empty set of servers")
-				Expect(hydraServers).To(ConsistOf([]string{test_hydra_server_url, another_test_hydra_server_url}), "The known servers are returned")
+				Expect(hydraServers).To(Equal([]string{another_test_hydra_server_url, test_hydra_server_url}), "The known servers are returned")
 			})
 		})
 	})
