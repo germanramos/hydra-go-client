@@ -2,12 +2,11 @@ package client_test
 
 import (
 	. "github.com/innotech/hydra-go-client/client"
-
 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 )
 
-var _ = FDescribe("HydraServiceCache", func() {
+var _ = Describe("HydraServiceCache", func() {
 	const (
 		test_hydra_server_url         string = "http://localhost:8080"
 		another_test_hydra_server_url string = "http://localhost:8081"
