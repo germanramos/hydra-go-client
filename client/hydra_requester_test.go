@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var _ = FDescribe("HydraRequester", func() {
+var _ = Describe("HydraRequester", func() {
 	const (
 		app_id              string = "testAppId"
 		test_hydra_server_0 string = "http://localhost:8080"
@@ -72,7 +72,7 @@ var _ = FDescribe("HydraRequester", func() {
 				Expect(candidateServers).To(BeEmpty(), "Must return an empty list of servers")
 				Expect(err).To(HaveOccurred(), "Must return an error")
 				// TODO
-				Expect(err).To(MatchError(IncorrectHydraServerResponse), "The expected error is returned")
+				Expect(err).To(MatchError(IncorrectHydraServerResponseError), "The expected error is returned")
 			})
 		})
 		Context("when hydra server is not accesible", func() {
@@ -81,7 +81,7 @@ var _ = FDescribe("HydraRequester", func() {
 				Expect(candidateServers).To(BeEmpty(), "Must return an empty list of servers")
 				Expect(err).To(HaveOccurred(), "Must return an error")
 				// TODO
-				Expect(err).To(MatchError(InaccessibleHydraServer), "The expected error is returned")
+				Expect(err).To(MatchError(InaccessibleHydraServerError), "The expected error is returned")
 			})
 		})
 	})

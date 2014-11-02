@@ -12,6 +12,7 @@ type Requester interface {
 	GetServicesById(serverUrl string, id string) ([]string, error)
 }
 
+// TODO: connection timeout
 type HydraRequester struct {
 }
 
@@ -23,23 +24,23 @@ func NewHydraRequester() *HydraRequester {
 func (h *HydraRequester) GetServicesById(serverUrl string, id string) ([]string, error) {
 	res, errResponse := http.Get(serverUrl + id)
 	if errResponse != nil {
-		return []string{}, InaccessibleHydraServer
+		return []string{}, InaccessibleHydraServerError
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return []string{}, IncorrectHydraServerResponse
+		return []string{}, IncorrectHydraServerResponseError
 	}
 
 	defer res.Body.Close()
 	body, errBody := ioutil.ReadAll(res.Body)
 	if errBody != nil {
-		return []string{}, IncorrectHydraServerResponse
+		return []string{}, IncorrectHydraServerResponseError
 	}
 
 	var servers []string
 	errJson := json.Unmarshal(body, &servers)
 	if errJson != nil {
-		return []string{}, IncorrectHydraServerResponse
+		return []string{}, IncorrectHydraServerResponseError
 	}
 	return servers, nil
 }
