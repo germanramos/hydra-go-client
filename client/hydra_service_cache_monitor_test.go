@@ -11,11 +11,11 @@ package client_test
 // 	"time"
 // )
 
-// var _ = Describe("AppsCacheMonitor", func() {
+// var _ = Describe("HydraCacheMonitor", func() {
 // 	var (
-// 		mockCtrl         *gomock.Controller
-// 		mockHydraClient  *mock.MockHydraClient
-// 		appsCacheMonitor *AppsCacheMonitor
+// 		mockCtrl          *gomock.Controller
+// 		mockHydraClient   *mock.MockHydraClient
+// 		hydraCacheMonitor *HydraCacheMonitor
 // 	)
 
 // 	var refreshInterval time.Duration = time.Duration(3000) * time.Millisecond
@@ -23,46 +23,46 @@ package client_test
 // 	BeforeEach(func() {
 // 		mockCtrl = gomock.NewController(GinkgoT())
 // 		mockHydraClient = mock.NewMockHydraClient(mockCtrl)
-// 		appsCacheMonitor = NewAppsCacheMonitor(mockHydraClient, refreshInterval)
+// 		hydraCacheMonitor = NewHydraCacheMonitor(mockHydraClient, refreshInterval)
 // 	})
 
 // 	AfterEach(func() {
 // 		mockCtrl.Finish()
 // 	})
 
-// 	Context("when new AppsCacheMonitor is instantiated", func() {
+// 	Context("when new HydraCacheMonitor is instantiated", func() {
 // 		It("should not be running", func() {
-// 			Expect(appsCacheMonitor.IsRunning()).To(BeFalse())
+// 			Expect(hydraCacheMonitor.IsRunning()).To(BeFalse())
 // 		})
 // 	})
 
 // 	Describe("Get", func() {
 // 		It("should return the refresh interval", func() {
-// 			Expect(appsCacheMonitor.GetInterval()).To(Equal(refreshInterval))
+// 			Expect(hydraCacheMonitor.GetInterval()).To(Equal(refreshInterval))
 // 		})
 // 	})
 
 // 	Describe("Run", func() {
 // 		It("should run successfully", func() {
-// 			mockHydraClient.EXPECT().ReloadAppServers()
-// 			appsCacheMonitor.Run()
+// 			mockHydraClient.EXPECT().ReloadHydraServers()
+// 			hydraCacheMonitor.Run()
 // 			Eventually(func() bool {
-// 				return appsCacheMonitor.IsRunning()
+// 				return hydraCacheMonitor.IsRunning()
 // 			}).Should(BeTrue())
-// 			appsCacheMonitor.Stop()
+// 			hydraCacheMonitor.Stop()
 // 		})
 // 	})
 
 // 	Describe("Stop", func() {
 // 		It("should stop the monitor", func() {
-// 			mockHydraClient.EXPECT().ReloadAppServers()
-// 			appsCacheMonitor.Run()
+// 			mockHydraClient.EXPECT().ReloadHydraServers()
+// 			hydraCacheMonitor.Run()
 // 			Eventually(func() bool {
-// 				return appsCacheMonitor.IsRunning()
+// 				return hydraCacheMonitor.IsRunning()
 // 			}).Should(BeTrue())
-// 			appsCacheMonitor.Stop()
+// 			hydraCacheMonitor.Stop()
 // 			Eventually(func() bool {
-// 				return appsCacheMonitor.IsRunning()
+// 				return hydraCacheMonitor.IsRunning()
 // 			}).Should(BeFalse())
 // 		})
 // 	})
