@@ -1,5 +1,46 @@
 package client_test
 
+import (
+	. "github.com/innotech/hydra-go-client/client"
+	mock "github.com/innotech/hydra-go-client/client/mock"
+
+	"github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
+
+	"time"
+)
+
+var _ = Describe("ServicesCacheMonitor", func() {
+	var (
+		mockCtrl                *gomock.Controller
+		mockHydraClient         *mock.MockHydraClient
+		hydraClientCacheMonitor *ServicesCacheMonitor
+	)
+
+	var refreshInterval time.Duration = time.Duration(3000) * time.Millisecond
+
+	BeforeEach(func() {
+		mockCtrl = gomock.NewController(GinkgoT())
+		mockHydraClient = mock.NewMockHydraClient(mockCtrl)
+		hydraClientCacheMonitor = NewServicesCacheMonitor(mockHydraClient)
+	})
+
+	AfterEach(func() {
+		mockCtrl.Finish()
+	})
+
+	Describe("Run", func() {
+		It("should call to reload services cache", func() {
+			mockHydraClient.EXPECT().ReloadServicesCache()
+
+			hydraClientCacheMonitor.Run()
+		})
+	})
+})
+
+/////////////////////////////////////////////////////////////////
+
 // import (
 // 	. "github.com/innotech/hydra-go-client/client"
 // 	mock "github.com/innotech/hydra-go-client/client/mock"

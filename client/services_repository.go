@@ -10,6 +10,13 @@ const (
 	AppRootPath string = "/app/"
 )
 
+type ServiceRepository interface {
+	FindById(id string, servers []string) ([]string, error)
+	FindByIds(ids []string, servers []string) (map[string][]string, error)
+	SetMaxNumberOfRetries(numberOfRetries int)
+	SetWaitBetweenAllServersRetry(millisecondsToRetry int)
+}
+
 type ServicesRepository struct {
 	HydraRequester             Requester
 	maxNumberOfRetries         int

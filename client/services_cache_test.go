@@ -7,7 +7,7 @@ import (
 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 )
 
-var _ = FDescribe("ServicesCache", func() {
+var _ = Describe("ServicesCache", func() {
 	const (
 		service_id              string = "service"
 		test_app_server         string = "http://localhost:8080/app-server-one"

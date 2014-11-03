@@ -1,5 +1,10 @@
 package client
 
+type HydraCache interface {
+	GetHydraServers() []string
+	Refresh(newHydraServers []string)
+}
+
 type HydraServiceCache struct {
 	hydraSeedServers []string
 	hydraServers     []string

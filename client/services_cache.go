@@ -4,6 +4,15 @@ import (
 	"sync"
 )
 
+type ServiceCache interface {
+	Exists(serviceId string) bool
+	FindById(serviceId string) []string
+	GetIds() []string
+	PutService(serviceId string, servers []string)
+	Refresh(newAppserverCache map[string][]string)
+	RemoveServer(serviceId, serverToRemove string)
+}
+
 // TODO: review LOCKs
 type ServicesCache struct {
 	sync.RWMutex

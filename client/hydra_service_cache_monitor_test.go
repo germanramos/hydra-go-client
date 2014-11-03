@@ -1,5 +1,44 @@
 package client_test
 
+import (
+	. "github.com/innotech/hydra-go-client/client"
+	mock "github.com/innotech/hydra-go-client/client/mock"
+
+	"github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
+
+	"time"
+)
+
+var _ = Describe("HydraCacheMonitor", func() {
+	var (
+		mockCtrl            *gomock.Controller
+		mockHydraClient     *mock.MockHydraClient
+		hydraServersMonitor *HydraServiceCacheMonitor
+	)
+
+	BeforeEach(func() {
+		mockCtrl = gomock.NewController(GinkgoT())
+		mockHydraClient = mock.NewMockHydraClient(mockCtrl)
+		hydraServersMonitor = NewHydraServiceCacheMonitor(mockHydraClient)
+	})
+
+	AfterEach(func() {
+		mockCtrl.Finish()
+	})
+
+	Describe("Run", func() {
+		It("should call to init Hydra service", func() {
+			mockHydraClient.EXPECT().InitHydraService()
+
+			hydraClientCacheMonitor.Run()
+		})
+	})
+})
+
+//////////////////////////////////////////////////////////////////
+
 // import (
 // 	. "github.com/innotech/hydra-go-client/client"
 // 	mock "github.com/innotech/hydra-go-client/client/mock"

@@ -1,5 +1,117 @@
 package client
 
+import (
+	. "github.com/innotech/hydra-go-client/client/error"
+
+	"errors"
+	"strings"
+)
+
+const (
+	HydraAppId string = "hydra"
+)
+
+type HydraClient struct {
+	hydraAvailable     bool // TODO: should be atomic
+	HydraServiceCache  HydraServiceCache
+	ServicesCache      ServicesCache
+	ServicesRepository ServicesRepository
+}
+
+func NewHydraClient(seedHydraServers []string) {
+	return &HydraClient{
+		HydraServiceCache: NewHydraServiceCache(seedHydraServers),
+	}
+}
+
+// Retrieve a list of servers sorted by hydra available for a concrete
+// application. This method can shortcut the cache.
+// In android this method must be called in a async task to avoid the interaction of the main thread
+// with the network, use getAsync instead.
+func (h *HydraClient) Get(serviceId string, shortcutCache bool) ([]string, error) {
+	if strings.Trim(serviceId, " ") {
+		return []strings{}, errors.New("Illegal Argument: serviceId must be a single word")
+	}
+
+	if !shortcutCache && h.ServicesCache.Exists(serviceId) {
+		return h.ServicesCache.FindById(serviceId)
+	}
+
+	servers, err = h.ServicesRepository.FindById(serviceId, h.HydraServiceCache.GetHydraServers())
+	if err == nil {
+		h.ServicesCache.PutService(serviceId, servers)
+	} else {
+		// TODO: Lock
+		h.hydraAvailable = false
+	}
+
+	return servers, nil
+}
+
+// Return a future with the server request. Avoid the interaction of the calling thread with the network.
+func (h *HydraClient) IsHydraAvailable() {
+	// TODO: Lock
+	return h.hydraAvailable
+}
+
+// TODO: Remove
+// The init hydra service is executed in isolated thread, this is for android use of the client
+// avoiding the iteration of the main thread with the network.
+// func (h *HydraClient) InitHydraService() {
+
+// }
+
+func (h *HydraClient) ReloadHydraServiceCache() {
+	// TODO: Lock
+	newHydraServers, err := h.ServicesRepository.FindById(HydraAppId, h.HydraServiceCache.GetHydraServers())
+	if err == nil {
+		h.HydraServiceCache.Refresh(newHydraServers)
+		if len(newHydraServers) > 0 {
+			h.hydraAvailable = true
+		} else {
+			h.hydraAvailable = false
+		}
+	} else {
+		h.hydraAvailable = false
+	}
+}
+
+func (h *HydraClient) ReloadServicesCache() {
+	if !h.hydraAvailable {
+		return
+	}
+
+	servers, err := h.ServicesRepository.FindByIds(h.ServicesCache.GetIds(), h.HydraServiceCache.GetHydraServers())
+	if err != nil {
+		h.hydraAvailable = false
+		return
+	}
+	h.ServicesCache.Refresh(servers)
+}
+
+func (h *HydraClient) SetMaxNumberOfRetries(numberOfRetries int) {
+	h.ServicesRepository.SetMaxNumberOfRetries(numberOfRetries)
+}
+
+func (h *HydraClient) SetWaitBetweenAllServersRetry(millisecondsToRetry int) {
+	h.ServicesRepository.SetWaitBetweenAllServersRetry(millisecondsToRetry)
+}
+
+// TODO
+// func (h *HydraClient) SetConnectionTimeout(connection int) {
+
+// }
+
+func (h *HydraClient) GetHydraServers() bool {
+	return h.hydraAvailable
+}
+
+func (h *HydraClient) SetHydraServers(available bool) {
+	h.hydraAvailable = available
+}
+
+////////////////////////////////////////////////////////////////
+
 // import (
 // 	"errors"
 // 	"sync"

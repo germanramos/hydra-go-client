@@ -1,5 +1,73 @@
 package client_test
 
+import (
+	. "github.com/innotech/hydra-go-client/client"
+	mock "github.com/innotech/hydra-go-client/client/mock"
+
+	"github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
+
+	"errors"
+)
+
+var _ = Describe("HydraClient", func() {
+	const (
+		hydra string = "hydra"
+		// connection_timeout = 1000
+		test_hydra_server_url         string = "http://localhost:8080"
+		another_test_hydra_server_url string = "http://localhost:8081"
+		test_app_server               string = "http://localhost:8080/app-server-first"
+		another_test_app_server       string = "http://localhost:8081/app-server-second"
+		service_id                    string = "testAppId"
+	)
+
+	var (
+		test_hydra_servers []string = []string{test_hydra_server_url, another_test_hydra_server_url}
+		test_services      []string = []string{test_app_server, another_test_app_server}
+
+		hydraClient           *Client
+		mockCtrl              *gomock.Controller
+		mockHydraServiceCache *mock.MockHydraServiceCache
+		mockServiceCache      *mock.MockServiceCache
+		mockServiceRepository *mock.MockServiceRepository
+	)
+
+	BeforeEach(func() {
+		mockCtrl = gomock.NewController(GinkgoT())
+		mockHydraServiceCache = mock.NewMockHydraServiceCache(mockCtrl)
+		mockServiceCache = mock.NewMockServiceCache(mockCtrl)
+		mockServiceRepository = mock.NewMockServiceRepository(mockCtrl)
+		hydraClient = NewHydraClient(test_hydra_servers)
+	})
+
+	AfterEach(func() {
+		mockCtrl.Finish()
+	})
+
+	Describe("Get", func() {
+		Context("when no services are cached", func() {
+			It("should return the list of balanced services from Hydra", func() {
+				c1 := mockServiceCache.EXPECT().Exists(gomock.Eq(service_id)).
+					Return(false)
+				c2 := mockHydraServiceCache.EXPECT().GetHydraServers().
+					Return(test_hydra_servers).After(c1)
+				c3 := mockServiceRepository.EXPECT().FindById(gomock.Eq(services_id), gomock.Eq(test_hydra_servers)).
+					Return(test_services).After(c2)
+
+				candidateServers := hydraClient.Get(service_id)
+
+				mockServiceCache.EXPECT().PutService(gomock.Eq(services_id), gomock.Eq(candidateServers)).
+					After(c3)
+				Expect(candidateServers).ToNot(BeEmpty(), "Must not return an empty list of servers")
+				Expect(candidateServers).ToNot(Equal(test_services), "Must return teh expected list of servers")
+			})
+		})
+	})
+})
+
+///////////////////////////////////////////////////////////////
+
 // import (
 // 	. "github.com/innotech/hydra-go-client/client"
 // 	mock "github.com/innotech/hydra-go-client/client/mock"
