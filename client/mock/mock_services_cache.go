@@ -4,7 +4,7 @@
 package mock_client
 
 import (
-	gomock "code.google.com/p/gomock/gomock"
+	gomock "github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
 )
 
 // Mock of ServiceCache interface
