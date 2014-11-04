@@ -1,35 +1,86 @@
 package client_test
 
-// import (
-// 	. "github.com/innotech/hydra-go-client/client"
-// 	mock "github.com/innotech/hydra-go-client/client/mock"
+import (
+	. "github.com/innotech/hydra-go-client/client"
+	mock "github.com/innotech/hydra-go-client/client/mock"
 
-// 	"github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
-// 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
-// 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
+	"github.com/innotech/hydra-go-client/vendors/code.google.com/p/gomock/gomock"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
+	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 
-// 	"time"
-// )
+	"time"
+)
 
-// var _ = Describe("HydraClientFactory", func() {
-// 	const (
-// 		seed_server string = "http://localhost:8080"
-// 	)
+var _ = Describe("HydraClientFactory", func() {
+	const (
+		seed_server string = "http://localhost:8080"
+	)
 
-// 	var (
-// 		mockCtrl        *gomock.Controller
-// 		mockHydraClient *mock.MockHydraClient
-// 		// test_hydra_servers []string = []string{seed_server}
-// 	)
+	var (
+		mockCtrl        *gomock.Controller
+		mockHydraClient *mock.MockHydraClient
+		test_hydra_servers []string = []string{seed_server}
+	)
 
-// 	BeforeEach(func() {
-// 		mockCtrl = gomock.NewController(GinkgoT())
-// 		mockHydraClient = mock.NewMockHydraClient(mockCtrl)
-// 	})
+	BeforeEach(func() {
+		mockCtrl = gomock.NewController(GinkgoT())
+		mockHydraClient = mock.NewMockHydraClient(mockCtrl)
+		// TODO: hydraClientFactoryTimersFixture
+	})
 
-// 	AfterEach(func() {
-// 		mockCtrl.Finish()
-// 	})
+	AfterEach(func() {
+		mockCtrl.Finish()
+		// TODO: Reset Factory
+	})
+
+	It("should get an unique Hydra client", func() {
+		hydraClient := Config(test_hydra_servers).Build()
+		anotherHydraClient := HydraClient()
+
+		Expect(hydraClient).To(BeNil(), "Client must not be nil")
+		Expect(anotherHydraClient).To(BeNil(), "The second client must not be nil")
+		Expect(hydraClient).To(Equal(anotherHydraClient), "The clients must be the same")
+	})
+
+	Context("when calls to Config many times", func() {
+		It("should get an unique Hydra client", func() {
+			hydraClient := Config(test_hydra_servers).Build()
+			anotherHydraClient := Config(test_hydra_servers).Build()
+
+			Expect(hydraClient).To(BeNil(), "Client must not be nil")
+			Expect(anotherHydraClient).To(BeNil(), "The second client must not be nil")
+			Expect(hydraClient).To(Equal(anotherHydraClient), "The clients must be the same")
+		})
+	})
+
+	Describe("Config", func() {
+		Context("when none seed servers is passed", func() {
+			It("should not create a client", func() {
+				client, err := Config([]string{}).Build()
+				Expect(err).To(HaveOccurred(), "Must return an error")
+				// TODO: Match error
+				Expect(client).To(BeNil(), "Must not return an Hydra client")
+			})
+		})
+	})
+
+	Describe("Build", func() {
+		It("should reload the hydra service cache", func() {
+			mockHydraClient.EXPECT().ReloadHydraServiceCache()
+
+			_ = Config(test_hydra_servers).Build()
+		})
+		Context("when the default configuration is not overwritten", func() {
+			It("should set the hydra cache refresh time", func() {
+				_ = Config(test_hydra_servers).Build()
+			})
+		})
+		Context("text", body)
+	})
+
+	Describe("SetWaitBetweenAllServersRetry", func() {
+		_ = Config(test_hydra_servers).WaitBetweenAllServerRetry(30).Build()
+	})
 
 // 	// TODO: add descriptions in asserts
 
