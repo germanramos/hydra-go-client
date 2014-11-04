@@ -71,7 +71,7 @@ func (s *ServicesRepository) FindByIds(ids []string, servers []string) (map[stri
 	for _, applicationId := range ids {
 		newAppServers, err := s.FindById(applicationId, servers)
 		if err != nil {
-			return newAppServerCache, err
+			return nil, err
 		}
 		newAppServerCache[applicationId] = newAppServers
 	}
