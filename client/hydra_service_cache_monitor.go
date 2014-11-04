@@ -1,36 +1,29 @@
 package client
 
-// import (
-// 	"time"
-// )
+import (
+	"time"
+)
 
-// type HydraCacheMonitor struct {
-// 	AbstractCacheMonitor
-// }
+type HydraServiceCacheMonitor struct {
+	AbstractHydraCacheMonitor
+}
 
-// func NewHydraCacheMonitor(hydraClient HydraClient, refreshInterval time.Duration) *HydraCacheMonitor {
-// 	h := new(HydraCacheMonitor)
-// 	h.hydraClient = hydraClient
-// 	h.running = false
-// 	h.timeInterval = refreshInterval
-// 	return h
-// }
+func NewHydraServiceCacheMonitor(hydraClient Client, refreshTime time.Duration) *HydraServiceCacheMonitor {
+	a := new(HydraServiceCacheMonitor)
+	a.hydraClient = hydraClient
+	a.refreshTime = refreshTime
+	return a
+}
 
-// // Run executes a coroutine that reload periodically the hydra cache of the Hydra Client
-// func (h *HydraCacheMonitor) Run() {
-// 	h.controller = make(chan string, 1)
-// 	h.running = true
-// 	h.hydraClient.ReloadHydraServers()
-// 	go func() {
-// 	OuterLoop:
-// 		for {
-// 			select {
-// 			case <-h.controller:
-// 				break OuterLoop
-// 			case <-time.After(h.timeInterval):
-// 				h.hydraClient.ReloadHydraServers()
-// 			}
-// 		}
-// 		h.running = false
-// 	}()
-// }
+// Run executes a goroutine that reload periodically the hydra service cache of the Hydra Client
+func (a *HydraServiceCacheMonitor) Run() {
+	a.hydraClient.ReloadHydraServiceCache()
+	go func() {
+		for {
+			select {
+			case <-time.After(a.refreshTime):
+				a.hydraClient.ReloadHydraServiceCache()
+			}
+		}
+	}()
+}
