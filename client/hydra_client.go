@@ -6,8 +6,9 @@ import (
 )
 
 type Client interface {
-	Get(serviceId string, shortcutCache bool) ([]string, error)
+	Get(serviceId string) ([]string, error)
 	GetHydraServers() []string
+	GetShortcuttingTheCache(serviceId string) ([]string, error)
 	IsHydraAvailable() bool
 	ReloadHydraServiceCache()
 	ReloadServicesCache()

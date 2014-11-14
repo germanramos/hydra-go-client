@@ -10,7 +10,7 @@ import (
 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 )
 
-var _ = FDescribe("HydraClient", func() {
+var _ = Describe("HydraClient", func() {
 	const (
 		hydra string = "hydra"
 		// connection_timeout = 1000

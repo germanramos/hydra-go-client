@@ -28,15 +28,15 @@ func (_m *MockClient) EXPECT() *_MockClientRecorder {
 	return _m.recorder
 }
 
-func (_m *MockClient) Get(serviceId string, shortcutCache bool) ([]string, error) {
-	ret := _m.ctrl.Call(_m, "Get", serviceId, shortcutCache)
+func (_m *MockClient) Get(serviceId string) ([]string, error) {
+	ret := _m.ctrl.Call(_m, "Get", serviceId)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockClientRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Get", arg0, arg1)
+func (_mr *_MockClientRecorder) Get(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Get", arg0)
 }
 
 func (_m *MockClient) GetHydraServers() []string {
@@ -47,6 +47,17 @@ func (_m *MockClient) GetHydraServers() []string {
 
 func (_mr *_MockClientRecorder) GetHydraServers() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetHydraServers")
+}
+
+func (_m *MockClient) GetShortcuttingTheCache(serviceId string) ([]string, error) {
+	ret := _m.ctrl.Call(_m, "GetShortcuttingTheCache", serviceId)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockClientRecorder) GetShortcuttingTheCache(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetShortcuttingTheCache", arg0)
 }
 
 func (_m *MockClient) IsHydraAvailable() bool {
