@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var _ = FDescribe("HydraClientFactory", func() {
+var _ = Describe("HydraClientFactory", func() {
 	const (
 		seed_server string = "http://localhost:8080"
 	)
