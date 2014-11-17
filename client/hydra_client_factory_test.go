@@ -8,7 +8,7 @@ import (
 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/ginkgo"
 	. "github.com/innotech/hydra-go-client/vendors/github.com/onsi/gomega"
 
-	// "time"
+	"time"
 )
 
 var _ = FDescribe("HydraClientFactory", func() {
@@ -22,6 +22,8 @@ var _ = FDescribe("HydraClientFactory", func() {
 		mockClientMaker       *mock.MockclientMaker
 		mockHydraMonitorMaker *mock.MockhydraMonitorMaker
 		mockHydraClient       *mock.MockClient
+		mockHydraMonitor      *mock.MockCacheMonitor
+		mockServicesMonitor   *mock.MockCacheMonitor
 
 		test_hydra_servers []string = []string{seed_server}
 	)
@@ -32,7 +34,8 @@ var _ = FDescribe("HydraClientFactory", func() {
 		mockClientMaker = mock.NewMockclientMaker(mockCtrl)
 		mockHydraMonitorMaker = mock.NewMockhydraMonitorMaker(mockCtrl)
 		mockHydraClient = mock.NewMockClient(mockCtrl)
-		// TODO: hydraClientFactoryTimersFixture
+		mockHydraMonitor = mock.NewMockCacheMonitor(mockCtrl)
+		mockServicesMonitor = mock.NewMockCacheMonitor(mockCtrl)
 	})
 
 	AfterEach(func() {
@@ -81,172 +84,272 @@ var _ = FDescribe("HydraClientFactory", func() {
 		})
 	})
 
-	// Describe("Config", func() {
-	// 	Context("when none seed servers is passed", func() {
-	// 		It("should not create a client", func() {
-	// 			client, err := Config([]string{}).Build()
-	// 			Expect(err).To(HaveOccurred(), "Must return an error")
-	// 			// TODO: Match error
-	// 			Expect(client).To(BeNil(), "Must not return an Hydra client")
-	// 		})
-	// 	})
-	// })
-
-	Describe("Build", func() {
-		// Covert up
-		// It("should reload the hydra service cache", func() {
-		// 	mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
-		// 	mockHydraClient.EXPECT().ReloadHydraServiceCache()
-
-		// 	factory := Config(test_hydra_servers)
-		// 	factory.ClientInstantiator = mockClientMaker
-		// 	_ = factory.Build()
-		// })
-		// 	// With default timeout
-		// 	It("should add a Hydra service cache monitor with default timeout and run it", func() {
-		// 		// mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
-
-		// 		factory := Config(test_hydra_servers)
-		// 		_ = factory.Build()
-		// 	})
-		// 	// It("should add a Hydra service cache monitor and run it", func() {
-		// 	// 	mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
-		// 	// 	mockHydraClient.EXPECT().ReloadHydraServiceCache()
-
-		// 	// 	factory := Config(test_hydra_servers)
-		// 	// 	factory.ClientInstantiator = mockClientMaker
-		// 	// 	_ = factory.Build()
-		// 	// })
-		// 	// Context("when the default configuration is not overwritten", func() {
-		// 	// 	It("should set the hydra cache refresh time", func() {
-		// 	// 		_ = Config(test_hydra_servers).Build()
-		// 	// 	})
-		// 	// })
-		// 	// Context("text", body)
+	Describe("Config", func() {
+		Context("when nil seed servers is passed", func() {
+			It("should not create a client", func() {
+				factory, err := Config(nil)
+				Expect(err).To(HaveOccurred(), "Must return an error")
+				// TODO: Match error
+				Expect(factory).To(BeNil(), "Must not return an HydraClientFactory")
+			})
+		})
+		Context("when none seed servers is passed", func() {
+			It("should not create a client", func() {
+				factory, err := Config([]string{})
+				Expect(err).To(HaveOccurred(), "Must return an error")
+				// TODO: Match error
+				Expect(factory).To(BeNil(), "Must not return an HydraClientFactory")
+			})
+		})
 	})
 
-	// Describe("SetWaitBetweenAllServersRetry", func() {
-	// 	_ = Config(test_hydra_servers).WaitBetweenAllServerRetry(30).Build()
-	// })
+	Describe("Build", func() {
+		It("should add a hydra service cache monitor with default timeout and run it", func() {
+			mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+			mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+			mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+			c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+			mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+			c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+			mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+			mockHydraMonitorMaker.EXPECT().MakeHydraMonitor(gomock.Any(), gomock.Eq(time.Duration(60)*time.Second)).
+				Return(mockHydraMonitor)
+			mockHydraMonitor.EXPECT().Run()
+
+			factory, _ := Config(test_hydra_servers)
+			factory.ClientInstantiator = mockClientMaker
+			factory.HydraMonitorInstantiator = mockHydraMonitorMaker
+			_ = factory.Build()
+		})
+		Context("when hydra cache refresh time is configured with", func() {
+			It("should add a Hydra service cache monitor with default timeout and run it", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				const timeout int = 10
+				mockHydraMonitorMaker.EXPECT().MakeHydraMonitor(gomock.Any(), gomock.Eq(time.Duration(timeout)*time.Second)).
+					Return(mockHydraMonitor)
+				mockHydraMonitor.EXPECT().Run()
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.HydraMonitorInstantiator = mockHydraMonitorMaker
+				_ = factory.WithHydraCacheRefreshTime(timeout).Build()
+			})
+		})
+		Context("when hydra cache refresh time is configured and", func() {
+			It("should add a Hydra service cache monitor with default timeout and run it", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				const timeout int = 10
+				mockHydraMonitorMaker.EXPECT().MakeHydraMonitor(gomock.Any(), gomock.Eq(time.Duration(timeout)*time.Second)).
+					Return(mockHydraMonitor)
+				mockHydraMonitor.EXPECT().Run()
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.HydraMonitorInstantiator = mockHydraMonitorMaker
+				_ = factory.AndHydraRefreshTime(timeout).Build()
+			})
+		})
+		Context("when hydra cache refresh time is disabled with", func() {
+			It("should not add a Hydra service cache monitor", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				mockHydraMonitorMaker.EXPECT().MakeHydraMonitor(gomock.Any(), gomock.Any()).
+					Times(0)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.HydraMonitorInstantiator = mockHydraMonitorMaker
+				_ = factory.WithoutHydraServerRefresh().Build()
+			})
+		})
+		Context("when hydra cache refresh time is disabled and", func() {
+			It("should not add a Hydra service cache monitor", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				mockHydraMonitorMaker.EXPECT().MakeHydraMonitor(gomock.Any(), gomock.Any()).
+					Times(0)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.HydraMonitorInstantiator = mockHydraMonitorMaker
+				_ = factory.AndWithoutHydraServerRefresh().Build()
+			})
+		})
+
+		It("should add an apps service cache monitor with default timeout and run it", func() {
+			mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+			mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+			mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+			c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+			mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+			c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+			mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+			mockAppsMonitorMaker.EXPECT().MakeAppsMonitor(gomock.Any(), gomock.Eq(time.Duration(20)*time.Second)).
+				Return(mockServicesMonitor)
+			mockServicesMonitor.EXPECT().Run()
+
+			factory, _ := Config(test_hydra_servers)
+			factory.ClientInstantiator = mockClientMaker
+			factory.AppsMonitorInstantiator = mockAppsMonitorMaker
+			_ = factory.Build()
+		})
+		Context("when apps cache refresh time is configured with", func() {
+			It("should add an apps service cache monitor with default timeout and run it", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				const timeout int = 90
+				mockAppsMonitorMaker.EXPECT().MakeAppsMonitor(gomock.Any(), gomock.Eq(time.Duration(timeout)*time.Second)).
+					Return(mockServicesMonitor)
+				mockServicesMonitor.EXPECT().Run()
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.AppsMonitorInstantiator = mockAppsMonitorMaker
+				_ = factory.WithAppsCacheRefreshTime(timeout).Build()
+			})
+		})
+		Context("when apps cache refresh time is configured and", func() {
+			It("should add an apps service cache monitor with default timeout and run it", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				const timeout int = 90
+				mockAppsMonitorMaker.EXPECT().MakeAppsMonitor(gomock.Any(), gomock.Eq(time.Duration(timeout)*time.Second)).
+					Return(mockServicesMonitor)
+				mockServicesMonitor.EXPECT().Run()
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.AppsMonitorInstantiator = mockAppsMonitorMaker
+				_ = factory.AndAppsCacheRefreshTime(timeout).Build()
+			})
+		})
+		Context("when apps cache refresh time is disabled with", func() {
+			It("should not add an apps service cache monitor", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				mockAppsMonitorMaker.EXPECT().MakeAppsMonitor(gomock.Any(), gomock.Any()).
+					Times(0)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.AppsMonitorInstantiator = mockAppsMonitorMaker
+				_ = factory.WithoutAppsRefresh().Build()
+			})
+		})
+		Context("when apps cache refresh time is disabled with", func() {
+			It("should not add an apps service cache monitor", func() {
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				mockAppsMonitorMaker.EXPECT().MakeAppsMonitor(gomock.Any(), gomock.Any()).
+					Times(0)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				factory.AppsMonitorInstantiator = mockAppsMonitorMaker
+				_ = factory.AndWithoutAppsRefresh().Build()
+			})
+		})
+
+		Context("when number of retries are configured with", func() {
+			It("should set the number of retries", func() {
+				const numberOfRetries int = 90
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Eq(numberOfRetries)).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				_ = factory.WithNumberOfRetries(numberOfRetries).Build()
+			})
+		})
+		Context("when number of retries are configured and", func() {
+			It("should set the number of retries", func() {
+				const numberOfRetries int = 90
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Eq(numberOfRetries)).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Any()).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				_ = factory.AndNumberOfRetries(numberOfRetries).Build()
+			})
+		})
+
+		Context("when milliseconds to retry are configured", func() {
+			It("should set wait between all servers retry", func() {
+				const millisecondsToRetry int = 30
+				mockClientMaker.EXPECT().MakeClient(gomock.Eq(test_hydra_servers)).Return(mockHydraClient)
+				mockHydraClient.EXPECT().SetMaxNumberOfRetries(gomock.Any()).Times(1)
+				mockHydraClient.EXPECT().SetWaitBetweenAllServersRetry(gomock.Eq(millisecondsToRetry)).Times(1)
+				c1 := mockHydraClient.EXPECT().ReloadHydraServiceCache().Times(0)
+				mockHydraClient.EXPECT().ReloadHydraServiceCache().AnyTimes().After(c1)
+				c2 := mockHydraClient.EXPECT().ReloadServicesCache().Times(0)
+				mockHydraClient.EXPECT().ReloadServicesCache().AnyTimes().After(c2)
+
+				factory, _ := Config(test_hydra_servers)
+				factory.ClientInstantiator = mockClientMaker
+				_ = factory.WaitBetweenAllServersRetry(millisecondsToRetry).Build()
+			})
+		})
+	})
 })
-
-// 	// TODO: add descriptions in asserts
-
-// 	// Describe("GetFactoryWithHydraServers", func() {
-// 	// 	Context("when it is is called repeatedly", func() {
-// 	// 		It("should return an unique hydra client", func() {
-// 	// 			hydraClient := GetFactoryWithHydraServers(test_hydra_servers).Build()
-// 	// 			anotherHydraClient := GetFactoryWithHydraServers(test_hydra_servers).Build()
-
-// 	// 			Expect(hydraClient).ToNot(BeNil())
-// 	// 			Expect(anotherHydraClietn).ToNot(BeNil())
-// 	// 			Expect(hydraClient).To(Equal(anotherHydraClient))
-// 	// 		})
-// 	// 	})
-// 	// })
-
-// 	// Describe("GetHydraClient", func() {
-// 	// 	It("should return an unique hydra client", func() {
-// 	// 		hydraClient := GetFactoryWithHydraServers(test_hydra_servers).Build()
-// 	// 		anotherHydraClient := GetHydraClient()
-
-// 	// 		Expect(hydraClient).ToNot(BeNil())
-// 	// 		Expect(anotherHydraClietn).ToNot(BeNil())
-// 	// 		Expect(hydraClient).To(Equal(anotherHydraClient))
-// 	// 	})
-// 	// })
-
-// 	// Describe("GetFactoryWithHydraServers", func() {
-// 	// 	Context("when it is is called repeatedly", func() {
-// 	// 		It("should return an unique hydra client", func() {
-// 	// 			hydraClient := GetFactoryWithHydraServers(test_hydra_servers).Build()
-// 	// 			anotherHydraClient := GetFactoryWithHydraServers(test_hydra_servers).Build()
-
-// 	// 			Expect(hydraClient).ToNot(BeNil())
-// 	// 			Expect(anotherHydraClietn).ToNot(BeNil())
-// 	// 			Expect(hydraClient).To(Equal(anotherHydraClient))
-// 	// 		})
-// 	// 	})
-// 	// })
-
-// 	//////////////////////////////////////////////////////////////////////
-
-// 	It("should be instantiated with default configuration", func() {
-// 		Expect(HydraClientFactory.GetAppsCacheDuration()).To(Equal(DefaultAppsCacheDuration))
-// 		Expect(HydraClientFactory.GetDurationBetweenAllServersRetry()).To(Equal(DefaultDurationBetweenAllServersRetry))
-// 		Expect(HydraClientFactory.GetHydraServersCacheDuration()).To(Equal(DefaultHydraServersCacheDuration))
-// 		Expect(HydraClientFactory.GetMaxNumberOfRetriesPerHydraServer()).To(Equal(DefaultNumberOfRetries))
-// 	})
-
-// 	Describe("Build", func() {
-// 		It("should build a HydraClient", func() {
-// 			var client *Client
-// 			Expect(HydraClientFactory.Build()).To(BeAssignableToTypeOf(client))
-// 		})
-// 	})
-
-// 	Describe("Config", func() {
-// 		Context("when hydra server list argument is nil", func() {
-// 			It("should throw an error", func() {
-// 				err := HydraClientFactory.Config(nil)
-// 				Expect(err).Should(HaveOccurred())
-// 			})
-// 		})
-// 		Context("when hydra server list argument is a empty list", func() {
-// 			It("should throw an error", func() {
-// 				err := HydraClientFactory.Config([]string{})
-// 				Expect(err).Should(HaveOccurred())
-// 			})
-// 		})
-// 		Context("when hydra server list argument is a valid list of servers", func() {
-// 			It("should set hydra server list successfully", func() {
-// 				err := HydraClientFactory.Config([]string{"http://localhost:8080"})
-// 				Expect(err).ShouldNot(HaveOccurred())
-// 			})
-// 		})
-// 	})
-
-// 	Describe("WithHydraServersCacheDuration", func() {
-// 		Context("when duration argument is a valid uint number", func() {
-// 			It("should set hydra servers cache duration successfully", func() {
-// 				const hydraServersCacheDuration time.Duration = time.Duration(30000) * time.Millisecond
-// 				h := HydraClientFactory.WithHydraServersCacheDuration(hydraServersCacheDuration)
-// 				Expect(h).To(Equal(HydraClientFactory))
-// 				Expect(hydraServersCacheDuration).To(Equal(HydraClientFactory.GetHydraServersCacheDuration()))
-// 			})
-// 		})
-// 	})
-
-// 	Describe("WithAppsCacheDuration", func() {
-// 		Context("when duration argument is a valid uint number", func() {
-// 			It("should set apps cache duration successfully", func() {
-// 				const appsCacheDuration time.Duration = time.Duration(30000) * time.Millisecond
-// 				h := HydraClientFactory.WithAppsCacheDuration(appsCacheDuration)
-// 				Expect(h).To(Equal(HydraClientFactory))
-// 				Expect(appsCacheDuration).To(Equal(HydraClientFactory.GetAppsCacheDuration()))
-// 			})
-// 		})
-// 	})
-
-// 	Describe("WithMaxNumberOfRetriesPerHydraServer", func() {
-// 		Context("when duration argument is a valid uint number", func() {
-// 			It("should set apps cache duration successfully", func() {
-// 				const retries uint = 3
-// 				h := HydraClientFactory.WithMaxNumberOfRetriesPerHydraServer(retries)
-// 				Expect(h).To(Equal(HydraClientFactory))
-// 				Expect(retries).To(Equal(HydraClientFactory.GetMaxNumberOfRetriesPerHydraServer()))
-// 			})
-// 		})
-// 	})
-
-// 	Describe("WaitBetweenAllServersRetry", func() {
-// 		Context("when duration argument is a valid uint number", func() {
-// 			It("should set wait between all servers retry successfully", func() {
-// 				const appsCacheDuration time.Duration = time.Duration(30000) * time.Millisecond
-// 				h := HydraClientFactory.WaitBetweenAllServersRetry(appsCacheDuration)
-// 				Expect(h).To(Equal(HydraClientFactory))
-// 				Expect(appsCacheDuration).To(Equal(HydraClientFactory.GetDurationBetweenAllServersRetry()))
-// 			})
-// 		})
-// 	})
-// })

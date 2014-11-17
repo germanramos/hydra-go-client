@@ -154,7 +154,17 @@ func (h *hydraClientFactory) getHydraClient() Client {
 }
 
 func Reset() {
+	// factory.AppsMonitorInstantiator = nil
+	// factory.ClientInstantiator = nil
+	// factory.HydraMonitorInstantiator = nil
+
+	factory.AppsMonitorInstantiator = new(appsMonitorInstantiator)
+	factory.ClientInstantiator = new(clientInstantiator)
+	factory.HydraMonitorInstantiator = new(hydraMonitorInstantiator)
+
 	factory.hydraClient = nil
+	factory.hydraMonitor = nil
+	factory.appsMonitor = nil
 	factory.hydraServerRefreshTime = default_hydra_server_refresh
 	factory.hydraAppsRefreshTime = default_hydra_apps_refresh
 	factory.enableAppRefresh = true
