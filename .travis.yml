@@ -6,7 +6,8 @@ go:
 before_install:
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-  - go get -v code.google.com/p/go.tools/cmd/cover
+  # - go get -v code.google.com/p/go.tools/cmd/cover
+  - go get -v golang.org/x/tools/cmd/cover
 
 install:
   - go get -v github.com/onsi/ginkgo/ginkgo
