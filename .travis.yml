@@ -17,5 +17,5 @@ install:
   - export PATH=$PATH:$HOME/gopath/bin
 
 script: 
-  - cd client && ginkgo -r --failOnPending --cover --trace
+  - cd client && ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race
   - $HOME/gopath/bin/goveralls -repotoken 6BhGhFG2xoAXDbeOubiatdzZhZCuQVlvT
