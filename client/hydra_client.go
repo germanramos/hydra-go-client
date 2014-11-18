@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"strings"
+	"sync"
 )
 
 type Client interface {
@@ -22,6 +23,7 @@ const (
 )
 
 type HydraClient struct {
+	sync.RWMutex
 	hydraAvailable     bool // TODO: should be atomic
 	HydraServiceCache  HydraCache
 	ServicesCache      ServiceCache
@@ -52,8 +54,9 @@ func (h *HydraClient) get(serviceId string, shortcutCache bool) ([]string, error
 	if err == nil {
 		h.ServicesCache.PutService(serviceId, servers)
 	} else {
-		// TODO: Lock
+		h.Lock()
 		h.hydraAvailable = false
+		h.Unlock()
 	}
 
 	return servers, nil
@@ -69,7 +72,8 @@ func (h *HydraClient) GetShortcuttingTheCache(serviceId string) ([]string, error
 
 // Return a future with the server request. Avoid the interaction of the calling thread with the network.
 func (h *HydraClient) IsHydraAvailable() bool {
-	// TODO: Lock
+	h.RLock()
+	defer h.RUnlock()
 	return h.hydraAvailable
 }
 
@@ -79,23 +83,34 @@ func (h *HydraClient) ReloadHydraServiceCache() {
 	if err == nil {
 		h.HydraServiceCache.Refresh(newHydraServers)
 		if len(newHydraServers) > 0 {
+			h.Lock()
 			h.hydraAvailable = true
+			h.Unlock()
 		} else {
+			h.Lock()
 			h.hydraAvailable = false
+			h.Unlock()
 		}
 	} else {
+		h.Lock()
 		h.hydraAvailable = false
+		h.Unlock()
 	}
 }
 
 func (h *HydraClient) ReloadServicesCache() {
-	if !h.hydraAvailable {
+	h.RLock()
+	isHydraAvailable := h.hydraAvailable
+	h.RUnlock()
+	if !isHydraAvailable {
 		return
 	}
 
 	servers, err := h.ServicesRepository.FindByIds(h.ServicesCache.GetIds(), h.HydraServiceCache.GetHydraServers())
 	if err != nil {
+		h.Lock()
 		h.hydraAvailable = false
+		h.Unlock()
 		return
 	}
 	h.ServicesCache.Refresh(servers)
@@ -119,5 +134,7 @@ func (h *HydraClient) GetHydraServers() []string {
 }
 
 func (h *HydraClient) SetHydraAvailable(available bool) {
+	h.Lock()
 	h.hydraAvailable = available
+	h.Unlock()
 }

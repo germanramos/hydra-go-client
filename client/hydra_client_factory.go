@@ -5,36 +5,7 @@ import (
 	"time"
 )
 
-// type clientMaker interface {
-// 	MakeClient() Client
-// }
-
-// type iClientInstatiator struct{}
-
-// func (i *iClientInstatiator) MakeClient() Client {
-// 	return new(iClient)
-// }
-
-// type factory struct {
-// 	IClientInstatiator clientMaker
-// }
-
-// func NewFactory() *factory {
-// 	return new(factory)
-// }
-
-// func (f *factory) Build() Client {
-// 	i := f.IClientInstatiator.MakeClient()
-// 	i.Run()
-// 	return i
-// }
-
 const (
-	// DefaultAppsCacheDuration              time.Duration = time.Duration(20000) * time.Millisecond
-	// DefaultDurationBetweenAllServersRetry time.Duration = time.Duration(0) * time.Millisecond
-	// DefaultHydraServersCacheDuration      time.Duration = time.Duration(60000) * time.Millisecond
-	// DefaultNumberOfRetries                uint          = 10
-
 	default_hydra_server_refresh time.Duration = time.Duration(60) * time.Second
 	default_hydra_apps_refresh   time.Duration = time.Duration(20) * time.Second
 	default_retries_number       int           = 10
@@ -69,10 +40,6 @@ type appsMonitorInstantiator struct{}
 func (c *appsMonitorInstantiator) MakeAppsMonitor(hydraClient Client, refreshTime time.Duration) CacheMonitor {
 	return NewServicesCacheMonitor(hydraClient, refreshTime)
 }
-
-// type hydraClientBuilder interface {
-// 	Build() Client
-// }
 
 type hydraClientFactory struct {
 	AppsMonitorInstantiator  appsMonitorMaker
@@ -154,10 +121,6 @@ func (h *hydraClientFactory) getHydraClient() Client {
 }
 
 func Reset() {
-	// factory.AppsMonitorInstantiator = nil
-	// factory.ClientInstantiator = nil
-	// factory.HydraMonitorInstantiator = nil
-
 	factory.AppsMonitorInstantiator = new(appsMonitorInstantiator)
 	factory.ClientInstantiator = new(clientInstantiator)
 	factory.HydraMonitorInstantiator = new(hydraMonitorInstantiator)
@@ -220,48 +183,3 @@ func (h *hydraClientFactory) AndWithoutHydraServerRefresh() *hydraClientFactory 
 func (h *hydraClientFactory) AndWithoutAppsRefresh() *hydraClientFactory {
 	return h.WithoutAppsRefresh()
 }
-
-// func (h *hydraClientFactory) WithConnectionTimeout(timeout int) {
-// 	h.connectionTimeout = timeout
-// 	return h
-// }
-
-// func (h *hydraClientFactory) AndWithConnectionTimeout(timeout int) {
-// 	return WithConnectionTimeout(timeout)
-// }
-
-// func (h *hydraClientFactory) GetAppsCacheDuration() time.Duration {
-// 	return h.appsCacheDuration
-// }
-
-// func (h *hydraClientFactory) GetHydraServersCacheDuration() time.Duration {
-// 	return h.hydraServersCacheDuration
-// }
-
-// func (h *hydraClientFactory) GetMaxNumberOfRetriesPerHydraServer() uint {
-// 	return h.maxNumberOfRetries
-// }
-
-// func (h *hydraClientFactory) GetDurationBetweenAllServersRetry() time.Duration {
-// 	return h.durationBetweenAllServersRetry
-// }
-
-// func (h *hydraClientFactory) WithAppsCacheDuration(duration time.Duration) *hydraClientFactory {
-// 	h.appsCacheDuration = duration
-// 	return h
-// }
-
-// func (h *hydraClientFactory) WithHydraServersCacheDuration(duration time.Duration) *hydraClientFactory {
-// 	h.hydraServersCacheDuration = duration
-// 	return h
-// }
-
-// func (h *hydraClientFactory) WithMaxNumberOfRetriesPerHydraServer(retries uint) *hydraClientFactory {
-// 	h.maxNumberOfRetries = retries
-// 	return h
-// }
-
-// func (h *hydraClientFactory) WaitBetweenAllServersRetry(duration time.Duration) *hydraClientFactory {
-// 	h.durationBetweenAllServersRetry = duration
-// 	return h
-// }

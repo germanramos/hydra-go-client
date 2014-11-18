@@ -13,7 +13,6 @@ type ServiceCache interface {
 	RemoveServer(serviceId, serverToRemove string)
 }
 
-// TODO: review LOCKs
 type ServicesCache struct {
 	sync.RWMutex
 	serviceCache map[string][]string
